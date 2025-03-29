@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools</title>
+</head>
+<body>
+    <h1>AI Tools List</h1>
+    <ul id="ai-tools-list"></ul>
+
+    <script>
+        fetch("https://ai-toolbox.nishaan-dulay.workers.dev")
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById("ai-tools-list");
+            data.forEach(tool => {
+                const li = document.createElement("li");
+                li.innerHTML = `<strong>${tool.name}</strong>: ${tool.description} - <a href="${tool.url}" target="_blank">Visit</a>`;
+                list.appendChild(li);
+            });
+        })
+        .catch(error => console.error("Error fetching AI tools:", error));
+    </script>
+</body>
+</html>
