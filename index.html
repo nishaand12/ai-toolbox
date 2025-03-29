@@ -4,23 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tools</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #ai-tools-list {
+            list-style: none;
+            padding: 0;
+        }
+        .tool-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .tool-item:hover {
+            transform: translateY(-2px);
+        }
+        .tool-name {
+            color: #2c5282;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .tool-description {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        .tool-link {
+            display: inline-block;
+            background-color: #4299e1;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .tool-link:hover {
+            background-color: #3182ce;
+        }
+        #loading {
+            text-align: center;
+            padding: 20px;
+            color: #4a5568;
+        }
+        #error {
+            background-color: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            display: none;
+        }
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .refresh-button:hover {
+            background-color: #38a169;
+        }
+    </style>
 </head>
 <body>
     <h1>AI Tools List</h1>
+    <button class="refresh-button" onclick="fetchTools()">Refresh List</button>
+    <div id="error"></div>
+    <div id="loading">Loading AI tools...</div>
     <ul id="ai-tools-list"></ul>
 
     <script>
-        fetch("https://ai-toolbox.nishaan-dulay.workers.dev")
-        .then(response => response.json())
-        .then(data => {
+        function fetchTools() {
+            const loading = document.getElementById("loading");
+            const error = document.getElementById("error");
             const list = document.getElementById("ai-tools-list");
-            data.forEach(tool => {
-                const li = document.createElement("li");
-                li.innerHTML = `<strong>${tool.name}</strong>: ${tool.description} - <a href="${tool.url}" target="_blank">Visit</a>`;
-                list.appendChild(li);
-            });
-        })
-        .catch(error => console.error("Error fetching AI tools:", error));
+            
+            // Reset display
+            loading.style.display = "block";
+            error.style.display = "none";
+            list.innerHTML = "";
+
+            fetch("https://ai-toolbox.nishaan-dulay.workers.dev")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loading.style.display = "none";
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(tool => {
+                            const li = document.createElement("li");
+                            li.className = "tool-item";
+                            li.innerHTML = `
+                                <div class="tool-name">${tool.name}</div>
+                                <div class="tool-description">${tool.description}</div>
+                                <a href="${tool.url}" class="tool-link" target="_blank">Visit Tool</a>
+                            `;
+                            list.appendChild(li);
+                        });
+                    } else {
+                        throw new Error("No tools found in the response");
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = "none";
+                    error.style.display = "block";
+                    error.textContent = `Error: ${error.message}`;
+                    console.error("Error fetching AI tools:", error);
+                });
+        }
+
+        // Initial fetch
+        fetchTools();
     </script>
 </body>
 </html>
