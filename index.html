@@ -96,12 +96,23 @@
             const error = document.getElementById("error");
             const list = document.getElementById("ai-tools-list");
             
+            if (!loading || !error || !list) {
+                console.error("Required elements not found");
+                return;
+            }
+            
             // Reset display
             loading.style.display = "block";
             error.style.display = "none";
             list.innerHTML = "";
 
-            fetch("https://ai-toolbox.nishaan-dulay.workers.dev")
+            fetch("https://ai-toolbox.nishaan-dulay.workers.dev", {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+                mode: 'cors'
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
