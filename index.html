@@ -4,112 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tools</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        #ai-tools-list {
-            list-style: none;
-            padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .tool-item {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-        .tool-item:hover {
-            transform: translateY(-2px);
-        }
-        .tool-name {
-            color: #2c5282;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-decoration: none;
-        }
-        .tool-name:hover {
-            text-decoration: underline;
-        }
-        .tool-description {
-            color: #4a5568;
-            margin-bottom: 15px;
-            flex-grow: 1;
-        }
-        .tool-category {
-            background-color: #e2e8f0;
-            color: #4a5568;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        .tool-link {
-            display: inline-block;
-            background-color: #4299e1;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            transition: background-color 0.2s;
-            text-align: center;
-        }
-        .tool-link:hover {
-            background-color: #3182ce;
-        }
-        #loading {
-            text-align: center;
-            padding: 20px;
-            color: #4a5568;
-        }
-        #error {
-            background-color: #fed7d7;
-            color: #c53030;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
-            display: none;
-        }
-        .refresh-button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .refresh-button:hover {
-            background-color: #38a169;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>AI Tools List</h1>
+    
+    <div class="filters-container">
+        <div class="filter-group">
+            <label for="category-filter">Category:</label>
+            <select id="category-filter" onchange="applyFilters()">
+                <option value="">All Categories</option>
+                <option value="Chatbot">Chatbots</option>
+                <option value="Image Generation">Image Generation</option>
+                <option value="Content Generation">Content Generation</option>
+                <option value="Code Assistant">Code Assistant</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="pricing-filter">Pricing:</label>
+            <select id="pricing-filter" onchange="applyFilters()">
+                <option value="">All Pricing</option>
+                <option value="free">Free</option>
+                <option value="paid">Paid</option>
+            </select>
+        </div>
+
+        <button class="clear-filters" onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <div class="active-filters" id="active-filters"></div>
+    
     <button class="refresh-button" onclick="fetchTools()">Refresh List</button>
     <div id="error"></div>
     <div id="loading">Loading AI tools...</div>
     <ul id="ai-tools-list"></ul>
 
     <script>
+        let allTools = []; // Store all tools globally
+
+        function applyFilters() {
+            const categoryFilter = document.getElementById("category-filter").value;
+            const pricingFilter = document.getElementById("pricing-filter").value;
+            const activeFilters = document.getElementById("active-filters");
+            const list = document.getElementById("ai-tools-list");
+            
+            // Update active filters display
+            let activeFiltersHtml = '';
+            if (categoryFilter) {
+                activeFiltersHtml += `<span class="filter-tag">Category: ${categoryFilter}</span>`;
+            }
+            if (pricingFilter) {
+                activeFiltersHtml += `<span class="filter-tag">Pricing: ${pricingFilter}</span>`;
+            }
+            activeFilters.innerHTML = activeFiltersHtml;
+            
+            // Filter tools
+            let filteredTools = allTools;
+            if (categoryFilter) {
+                filteredTools = filteredTools.filter(tool => tool.category === categoryFilter);
+            }
+            if (pricingFilter) {
+                filteredTools = filteredTools.filter(tool => {
+                    if (pricingFilter === 'free') {
+                        return tool.pricing === 'Free' || !tool.pricing;
+                    } else if (pricingFilter === 'paid') {
+                        return tool.pricing && tool.pricing !== 'Free';
+                    }
+                    return true;
+                });
+            }
+            
+            // Update display
+            list.innerHTML = "";
+            if (filteredTools.length > 0) {
+                filteredTools.forEach(tool => {
+                    const li = document.createElement("li");
+                    li.className = "tool-item";
+                    li.innerHTML = `
+                        <a href="tool.html?id=${tool.id}" class="tool-name">${tool.name}</a>
+                        <div class="tool-category">${tool.category || 'Uncategorized'}</div>
+                        <div class="tool-description">${tool.description}</div>
+                        <a href="${tool.url}" class="tool-link" target="_blank">Visit Tool Website</a>
+                    `;
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li class="no-results">No tools match the selected filters</li>';
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById("category-filter").value = "";
+            document.getElementById("pricing-filter").value = "";
+            document.getElementById("active-filters").innerHTML = "";
+            applyFilters();
+        }
+
         function fetchTools() {
             const loading = document.getElementById("loading");
             const error = document.getElementById("error");
@@ -141,17 +132,8 @@
                 .then(data => {
                     loading.style.display = "none";
                     if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(tool => {
-                            const li = document.createElement("li");
-                            li.className = "tool-item";
-                            li.innerHTML = `
-                                <a href="tool.html?id=${tool.id}" class="tool-name">${tool.name}</a>
-                                <div class="tool-category">${tool.category || 'Uncategorized'}</div>
-                                <div class="tool-description">${tool.description}</div>
-                                <a href="${tool.url}" class="tool-link" target="_blank">Visit Tool Website</a>
-                            `;
-                            list.appendChild(li);
-                        });
+                        allTools = data; // Store all tools
+                        applyFilters(); // Apply any active filters
                     } else {
                         throw new Error("No tools found in the response");
                     }
