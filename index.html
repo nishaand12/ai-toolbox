@@ -16,7 +16,7 @@
     <div class="filters-container">
         <div class="filter-group">
             <label for="category-filter">Category:</label>
-            <select id="categoryFilter" class="filter-select">
+            <select id="categoryFilter" class="filter-select" onchange="applyFilters()">
                 <option value="">All Categories</option>
                 <option value="ChatBot">ChatBot</option>
                 <option value="Content Generator">Content Generator</option>
@@ -32,10 +32,11 @@
         
         <div class="filter-group">
             <label for="pricing-filter">Pricing:</label>
-            <select id="pricing-filter" onchange="applyFilters()">
+            <select id="pricing-filter" class="filter-select" onchange="applyFilters()">
                 <option value="">All Pricing</option>
-                <option value="free">Free</option>
-                <option value="paid">Paid</option>
+                <option value="Free">Free</option>
+                <option value="Freemium">Freemium</option>
+                <option value="Paid">Paid</option>
             </select>
         </div>
 
